@@ -20,6 +20,8 @@ public final class BoardAssembler {
 
     private static final int GRID_SIDE = 5;
     private static final int CENTER_SLOT = 12;
+    private static final int TOTAL_CELLS = 25;
+    private static final int NON_FREE_CELLS = 24;
 
     private BoardAssembler() {
         /* static helper — never instantiated */
@@ -29,13 +31,16 @@ public final class BoardAssembler {
     /*  Board creation                                                     */
     /* ------------------------------------------------------------------ */
 
-    /** Produce a fresh 25-cell board with shuffled prompts and a centre free cell. */
+    /** 
+     * Produce a fresh 25-cell board with shuffled prompts and a centre free cell.
+     * @return new board with randomized prompts and center free cell
+     */
     public static List<BingoCell> assembleNewBoard() {
         var shuffledPrompts = new ArrayList<>(IcebreakerPrompts.ALL_PROMPTS);
         Collections.shuffle(shuffledPrompts);
-        List<String> chosenPrompts = shuffledPrompts.subList(0, 24);
+        List<String> chosenPrompts = shuffledPrompts.subList(0, NON_FREE_CELLS);
 
-        List<BingoCell> freshBoard = new ArrayList<>(25);
+        List<BingoCell> freshBoard = new ArrayList<>(TOTAL_CELLS);
         int promptCursor = 0;
 
         for (int slot = 0; slot < GRID_SIDE * GRID_SIDE; slot++) {
@@ -53,12 +58,19 @@ public final class BoardAssembler {
     /*  Cell toggling                                                      */
     /* ------------------------------------------------------------------ */
 
-    /** Return a copy of the board with the given cell's selection toggled (free cells are immune). */
-    public static List<BingoCell> flipCell(List<BingoCell> board, int cellId) {
+    /** 
+     * Return a copy of the board with the given cell's selection toggled.
+     * Free cells are immune to toggling.
+     * @param board the current board state
+     * @param cellId the cell to toggle
+     * @return updated board with toggled cell
+     */
+    public static List<BingoCell> flipCell(final List<BingoCell> board, final int cellId) {
         List<BingoCell> updatedBoard = new ArrayList<>(board.size());
         for (BingoCell tile : board) {
             if (tile.id() == cellId && !tile.freeCell()) {
-                updatedBoard.add(new BingoCell(tile.id(), tile.prompt(), !tile.selected(), false));
+                updatedBoard.add(new BingoCell(tile.id(), tile.prompt(), 
+                    !tile.selected(), false));
             } else {
                 updatedBoard.add(tile);
             }
@@ -70,8 +82,12 @@ public final class BoardAssembler {
     /*  Victory detection                                                  */
     /* ------------------------------------------------------------------ */
 
-    /** Scan rows, columns, and diagonals; return the first fully-selected line, if any. */
-    public static Optional<WinningStreak> detectWinningStreak(List<BingoCell> board) {
+    /** 
+     * Scan rows, columns, and diagonals for winning streaks.
+     * @param board the current board state
+     * @return the first fully-selected line found, if any
+     */
+    public static Optional<WinningStreak> detectWinningStreak(final List<BingoCell> board) {
 
         // Rows
         for (int row = 0; row < GRID_SIDE; row++) {
@@ -108,8 +124,12 @@ public final class BoardAssembler {
         return Optional.empty();
     }
 
-    /** Extract the board positions belonging to a streak into a Set for quick lookup. */
-    public static Set<Integer> collectWinningCellIds(WinningStreak streak) {
+    /** 
+     * Extract the board positions belonging to a streak into a Set for quick lookup.
+     * @param streak the winning streak to extract positions from
+     * @return set of cell IDs that make up the winning streak
+     */
+    public static Set<Integer> collectWinningCellIds(final WinningStreak streak) {
         return new HashSet<>(streak.cellPositions());
     }
 
@@ -117,19 +137,19 @@ public final class BoardAssembler {
     /*  Internal helpers                                                   */
     /* ------------------------------------------------------------------ */
 
-    private static List<Integer> positionsForRow(int row) {
+    private static List<Integer> positionsForRow(final int row) {
         return IntStream.range(0, GRID_SIDE)
                 .map(col -> row * GRID_SIDE + col)
                 .boxed().toList();
     }
 
-    private static List<Integer> positionsForColumn(int col) {
+    private static List<Integer> positionsForColumn(final int col) {
         return IntStream.range(0, GRID_SIDE)
                 .map(row -> row * GRID_SIDE + col)
                 .boxed().toList();
     }
 
-    private static boolean allSelected(List<BingoCell> board, List<Integer> positions) {
+    private static boolean allSelected(final List<BingoCell> board, final List<Integer> positions) {
         for (int pos : positions) {
             if (!board.get(pos).selected()) {
                 return false;

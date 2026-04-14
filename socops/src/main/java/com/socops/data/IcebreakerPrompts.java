@@ -9,8 +9,13 @@ import java.util.List;
  */
 public final class IcebreakerPrompts {
 
+    /** The label displayed for the center free cell on the bingo board. */
     public static final String FREE_CELL_LABEL = "FREE SPACE";
 
+    /** 
+     * Complete list of icebreaker prompts for the bingo game.
+     * Contains exactly 24 prompts to fill a 5x5 grid minus the center free cell.
+     */
     public static final List<String> ALL_PROMPTS = List.of(
             "bikes to work",
             "has lived in another country",

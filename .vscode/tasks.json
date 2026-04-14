@@ -5,6 +5,12 @@
 			"label": "mvn: run",
 			"type": "shell",
 			"command": "cd socops && ./mvnw spring-boot:run",
+			"options": {
+				"env": {
+					"JAVA_HOME": "C:\\Users\\PREGO\\dev\\tools\\OpenJDK21",
+					"PATH": "C:\\Users\\PREGO\\dev\\tools\\OpenJDK21\\bin;${env:PATH}"
+				}
+			},
 			"isBackground": true,
 			"problemMatcher": {
 				"pattern": {
@@ -28,12 +34,24 @@
 			"label": "mvn: build",
 			"type": "shell",
 			"command": "cd socops && ./mvnw clean package",
+			"options": {
+				"env": {
+					"JAVA_HOME": "C:\\Users\\PREGO\\dev\\tools\\OpenJDK21",
+					"PATH": "C:\\Users\\PREGO\\dev\\tools\\OpenJDK21\\bin;${env:PATH}"
+				}
+			},
 			"group": "build"
 		},
 		{
 			"label": "mvn: test",
 			"type": "shell",
 			"command": "cd socops && ./mvnw test",
+			"options": {
+				"env": {
+					"JAVA_HOME": "C:\\Users\\PREGO\\dev\\tools\\OpenJDK21",
+					"PATH": "C:\\Users\\PREGO\\dev\\tools\\OpenJDK21\\bin;${env:PATH}"
+				}
+			},
 			"group": "test"
 		}
 	]

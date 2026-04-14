@@ -16,5 +16,17 @@
   "chat.viewTitle.enabled": true,
   "chat.viewSessions.enabled": true,
   "github.copilot.chat.cli.customAgents.enabled": true,
-  "scm.repositories.explorer": true
+  "scm.repositories.explorer": true,
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-21",
+      "path": "C:\\Users\\PREGO\\dev\\tools\\OpenJDK21",
+      "default": true
+    }
+  ],
+  "terminal.integrated.env.windows": {
+    "JAVA_HOME": "C:\\Users\\PREGO\\dev\\tools\\OpenJDK21",
+    "PATH": "C:\\Users\\PREGO\\dev\\tools\\OpenJDK21\\bin;${env:PATH}"
+  }
 }
