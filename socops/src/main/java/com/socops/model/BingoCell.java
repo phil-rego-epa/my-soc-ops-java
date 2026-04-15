@@ -3,7 +3,7 @@ package com.socops.model;
 import com.socops.data.IcebreakerPrompts;
 
 /**
- * One tile on the 5×5 bingo grid.
+ * One tile on the 5x5 bingo grid.
  *
  * @param id        zero-based position (0-24)
  * @param prompt    display text shown on the tile

@@ -33,10 +33,20 @@ public final class BoardAssembler {
 
     /** 
      * Produce a fresh 25-cell board with shuffled prompts and a centre free cell.
+     * Uses the default classic icebreaker prompts.
      * @return new board with randomized prompts and center free cell
      */
     public static List<BingoCell> assembleNewBoard() {
-        var shuffledPrompts = new ArrayList<>(IcebreakerPrompts.ALL_PROMPTS);
+        return assembleNewBoard(IcebreakerPrompts.ALL_PROMPTS);
+    }
+
+    /** 
+     * Produce a fresh 25-cell board with shuffled prompts and a centre free cell.
+     * @param promptSource the list of prompts to choose from
+     * @return new board with randomized prompts and center free cell
+     */
+    public static List<BingoCell> assembleNewBoard(List<String> promptSource) {
+        var shuffledPrompts = new ArrayList<>(promptSource);
         Collections.shuffle(shuffledPrompts);
         List<String> chosenPrompts = shuffledPrompts.subList(0, NON_FREE_CELLS);
 

@@ -30,14 +30,61 @@
             <h2 class="font-semibold text-gray-800 mb-3">How to play</h2>
             <ul class="text-left text-gray-600 text-sm space-y-2">
                 <li>• Find people who match the questions</li>
-                <li>• Tap a square when you find a match</li>
-                <li>• Get 5 in a row to win!</li>
+                <li>• Pick Bingo for a board or Scavenger Hunt for a checklist</li>
+                <li>• Mark each match as you meet people around the room</li>
             </ul>
+        </div>
+
+        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200 mb-8">
+            <h2 class="font-semibold text-gray-800 mb-4">Choose Your Mode</h2>
+            <div class="space-y-3">
+                <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-accent transition-colors">
+                    <input type="radio" name="gameMode" value="bingo" checked class="mr-3 text-accent">
+                    <div class="text-left">
+                        <div class="font-medium text-gray-900">Bingo</div>
+                        <div class="text-sm text-gray-500">Classic 5x5 board with line wins</div>
+                    </div>
+                </label>
+                <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-accent transition-colors">
+                    <input type="radio" name="gameMode" value="scavenger" class="mr-3 text-accent">
+                    <div class="text-left">
+                        <div class="font-medium text-gray-900">Scavenger Hunt</div>
+                        <div class="text-sm text-gray-500">Simple checklist with live progress</div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Board Type Selection -->
+        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200 mb-8">
+            <h2 class="font-semibold text-gray-800 mb-4">Choose Your Board</h2>
+            <div class="space-y-3">
+                <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-accent transition-colors">
+                    <input type="radio" name="boardType" value="classic" checked class="mr-3 text-accent">
+                    <div class="text-left">
+                        <div class="font-medium text-gray-900">Classic Mix</div>
+                        <div class="text-sm text-gray-500">General icebreakers for everyone</div>
+                    </div>
+                </label>
+                <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-accent transition-colors">
+                    <input type="radio" name="boardType" value="chaotic" class="mr-3 text-accent">
+                    <div class="text-left">
+                        <div class="font-medium text-gray-900">Chaotic Tech & Side Projects</div>
+                        <div class="text-sm text-gray-500">For developers and makers</div>
+                    </div>
+                </label>
+            </div>
         </div>
 
         <button onclick="launchGame()"
                 class="w-full bg-accent text-white font-semibold py-4 px-8 rounded-lg text-lg accent-active transition-colors">
             Start Game
+        </button>
+        <button id="startScavengerButton"
+                data-mode="scavenger"
+                onclick="startScavengerMode()"
+                class="w-full bg-white text-gray-900 font-semibold py-3 px-8 rounded-lg text-sm transition-colors border border-gray-200 mt-3">
+            Start Scavenger Hunt
         </button>
     </div>
 </div>
@@ -54,13 +101,23 @@
             &#8592; Back
         </button>
         <h1 class="font-bold text-gray-900">Soc Ops</h1>
-        <div class="w-16"></div>
+        <div id="activeModeLabel" class="mode-badge">Bingo</div>
     </header>
 
     <!-- hint -->
-    <p class="text-center text-gray-500 text-sm py-2 px-4">
+    <p id="activeHint" class="text-center text-gray-500 text-sm py-2 px-4">
         Tap a square when you find someone who matches it.
     </p>
+
+    <div id="progressPanel" class="progress-panel" style="display:none">
+        <div class="progress-meta">
+            <span class="font-semibold text-gray-800">Scavenger Hunt Progress</span>
+            <span id="progressText" class="text-sm text-gray-600">0 / 24 complete</span>
+        </div>
+        <div class="progress-track">
+            <div id="progressFill" class="progress-fill" role="progressbar" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0" aria-valuetext="0 of 24 complete"></div>
+        </div>
+    </div>
 
     <!-- bingo banner (hidden until victory) -->
     <div id="bingoBanner"
@@ -74,6 +131,9 @@
         <div id="gridContainer"
              class="grid grid-cols-5 gap-1 w-full max-w-md mx-auto aspect-square">
             <!-- tiles injected by JS -->
+        </div>
+        <div id="scavengerChecklist" class="scavenger-list" role="list" style="display:none">
+            <!-- checklist rows injected by JS -->
         </div>
     </div>
 </div>
@@ -105,30 +165,68 @@
     var SIDE = 5;
     var TOTAL_CELLS = SIDE * SIDE;
     var PERSIST_KEY = "socops-bingo-snapshot";
+    var SCAVENGER_PERSIST_KEY = "socops-bingo-snapshot";
+    var MODE_BINGO = "bingo";
+    var MODE_SCAVENGER = "scavenger";
 
     /* ── state ────────────────────────────────────────────────── */
     var liveTiles   = [];          /* Array of BingoCell objects  */
     var streakFound = null;        /* WinningStreak or null       */
     var modalShown  = false;
     var currentPhase = "LOBBY";    /* LOBBY | ACTIVE | VICTORY    */
+    var currentBoardType = "classic";
+    var currentGameplayMode = MODE_BINGO;
 
     /* ── DOM refs ─────────────────────────────────────────────── */
-    var lobbyDiv   = document.getElementById("lobbyView");
-    var activeDiv  = document.getElementById("activeView");
-    var gridDiv    = document.getElementById("gridContainer");
-    var bannerDiv  = document.getElementById("bingoBanner");
-    var overlayDiv = document.getElementById("victoryOverlay");
+    var lobbyDiv        = document.getElementById("lobbyView");
+    var activeDiv       = document.getElementById("activeView");
+    var gridDiv         = document.getElementById("gridContainer");
+    var scavengerDiv    = document.getElementById("scavengerChecklist");
+    var bannerDiv       = document.getElementById("bingoBanner");
+    var overlayDiv      = document.getElementById("victoryOverlay");
+    var activeModeLabel = document.getElementById("activeModeLabel");
+    var activeHint      = document.getElementById("activeHint");
+    var progressPanel   = document.getElementById("progressPanel");
+    var progressText    = document.getElementById("progressText");
+    var progressFill    = document.getElementById("progressFill");
 
     /* ── phase switching ──────────────────────────────────────── */
     function showPhase(phase) {
         currentPhase = phase;
         lobbyDiv.style.display   = (phase === "LOBBY") ? "" : "none";
         activeDiv.style.display  = (phase !== "LOBBY") ? "" : "none";
-        bannerDiv.style.display  = (streakFound)       ? "" : "none";
-        overlayDiv.style.display = (modalShown)        ? "" : "none";
+        bannerDiv.style.display  = (currentGameplayMode === MODE_BINGO && streakFound) ? "" : "none";
+        overlayDiv.style.display = (currentGameplayMode === MODE_BINGO && modalShown) ? "" : "none";
     }
 
     /* ── board rendering ──────────────────────────────────────── */
+    function renderBoard() {
+        syncActiveViewCopy();
+
+        if (currentGameplayMode === MODE_SCAVENGER) {
+            gridDiv.style.display = "none";
+            scavengerDiv.style.display = "";
+            progressPanel.style.display = "";
+            paintChecklist();
+            updateProgress();
+            return;
+        }
+
+        progressPanel.style.display = "none";
+        scavengerDiv.style.display = "none";
+        gridDiv.style.display = "grid";
+        paintGrid();
+    }
+
+    function syncActiveViewCopy() {
+        activeModeLabel.textContent = (currentGameplayMode === MODE_SCAVENGER)
+            ? "Scavenger Hunt"
+            : "Bingo";
+        activeHint.textContent = (currentGameplayMode === MODE_SCAVENGER)
+            ? "Check off each prompt as you find someone who matches it."
+            : "Tap a square when you find someone who matches it.";
+    }
+
     function paintGrid() {
         gridDiv.innerHTML = "";
         var winIds = streakFound ? gatherStreakIds(streakFound) : {};
@@ -181,11 +279,68 @@
         }
     }
 
+    function renderChecklist(items) {
+        liveTiles = items;
+        paintChecklist();
+    }
+
+    function paintChecklist() {
+        scavengerDiv.innerHTML = "";
+
+        for (var t = 0; t < liveTiles.length; t++) {
+            var tile = liveTiles[t];
+            var row = document.createElement("label");
+            var rowClass = "scavenger-row";
+
+            if (tile.selected) {
+                rowClass += " is-complete";
+            }
+            if (tile.freeCell) {
+                rowClass += " is-free";
+            }
+            row.className = rowClass;
+            row.setAttribute("role", "listitem");
+
+            var checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.className = "scavenger-checkbox";
+            checkbox.checked = tile.selected;
+            checkbox.disabled = tile.freeCell;
+            checkbox.setAttribute("aria-label", tile.freeCell ? "Free space" : tile.prompt);
+            checkbox.addEventListener("change", (function (cid) {
+                return function () { onTileTapped(cid); };
+            })(tile.id));
+
+            var copyWrap = document.createElement("div");
+            copyWrap.className = "scavenger-copy";
+
+            var title = document.createElement("span");
+            title.className = "font-semibold text-gray-900";
+            title.textContent = tile.prompt;
+            copyWrap.appendChild(title);
+
+            var meta = document.createElement("span");
+            meta.className = "scavenger-meta";
+            if (tile.freeCell) {
+                meta.textContent = "Auto-complete bonus tile";
+            } else if (tile.selected) {
+                meta.textContent = "Marked complete";
+            } else {
+                meta.textContent = "Tap to mark complete";
+            }
+            copyWrap.appendChild(meta);
+
+            row.appendChild(checkbox);
+            row.appendChild(copyWrap);
+            scavengerDiv.appendChild(row);
+        }
+    }
+
     /* ── tile tap logic ───────────────────────────────────────── */
     function onTileTapped(cellId) {
         liveTiles = flipTile(liveTiles, cellId);
 
-        if (!streakFound) {
+        if (currentGameplayMode === MODE_BINGO && !streakFound) {
             var detected = scanForStreak(liveTiles);
             if (detected) {
                 streakFound = detected;
@@ -194,9 +349,13 @@
             }
         }
         persistSnapshot();
-        paintGrid();
-        bannerDiv.style.display  = streakFound ? "" : "none";
-        overlayDiv.style.display = modalShown  ? "" : "none";
+        renderBoard();
+        bannerDiv.style.display  = (currentGameplayMode === MODE_BINGO && streakFound) ? "" : "none";
+        overlayDiv.style.display = (currentGameplayMode === MODE_BINGO && modalShown) ? "" : "none";
+    }
+
+    function toggleChecklistItem(itemId) {
+        onTileTapped(itemId);
     }
 
     /* ── board manipulation (mirrors BoardAssembler.java) ─────── */
@@ -263,11 +422,61 @@
         return lookup;
     }
 
+    function calculateChecklistProgress(items) {
+        return calculateProgress(items);
+    }
+
+    function calculateProgress(board) {
+        var completed = 0;
+        var total = 0;
+
+        for (var i = 0; i < board.length; i++) {
+            if (!board[i].freeCell) {
+                total++;
+                if (board[i].selected) {
+                    completed++;
+                }
+            }
+        }
+
+        return {
+            completed: completed,
+            total: total,
+            percent: total === 0 ? 0 : Math.round((completed / total) * 100)
+        };
+    }
+
+    function updateProgress() {
+        var progress = calculateProgress(liveTiles);
+        progressText.textContent = progress.completed + " / " + progress.total + " complete";
+        progressFill.style.width = progress.percent + "%";
+        progressFill.setAttribute("aria-valuenow", String(progress.completed));
+        progressFill.setAttribute("aria-valuetext", progress.completed + " of " + progress.total + " complete");
+    }
+
+    function syncLobbySelections() {
+        syncRadioSelection("boardType", currentBoardType);
+        syncRadioSelection("gameMode", currentGameplayMode);
+    }
+
+    function syncRadioSelection(groupName, value) {
+        var radio = document.querySelector('input[name="' + groupName + '"][value="' + value + '"]');
+        if (radio) {
+            radio.checked = true;
+        }
+    }
+
     /* ── localStorage persistence ─────────────────────────────── */
+    function saveScavengerState() {
+        persistSnapshot();
+    }
+
     function persistSnapshot() {
         try {
             var blob = JSON.stringify({
                 phase: currentPhase,
+                boardType: currentBoardType,
+                mode: currentGameplayMode,
                 tiles: liveTiles,
                 streak: streakFound,
                 modal: modalShown
@@ -276,12 +485,21 @@
         } catch (_) { /* storage full or unavailable */ }
     }
 
+    function restoreScavengerState() {
+        return restoreSnapshot();
+    }
+
     function restoreSnapshot() {
         try {
             var raw = localStorage.getItem(PERSIST_KEY);
             if (!raw) { return false; }
             var snap = JSON.parse(raw);
-            if (!snap.tiles || snap.tiles.length !== TOTAL_CELLS) { return false; }
+            currentBoardType = snap.boardType || "classic";
+            currentGameplayMode = snap.mode || MODE_BINGO;
+            if (!snap.tiles || snap.tiles.length !== TOTAL_CELLS) {
+                syncLobbySelections();
+                return false;
+            }
             liveTiles   = snap.tiles;
             streakFound = snap.streak || null;
             modalShown  = !!snap.modal;
@@ -292,7 +510,11 @@
 
     /* ── public API (called from onclick attrs) ───────────────── */
     window.launchGame = function () {
-        fetch("/api/bingo/fresh-board")
+        currentBoardType = document.querySelector('input[name="boardType"]:checked').value;
+        currentGameplayMode = document.querySelector('input[name="gameMode"]:checked').value;
+        var apiUrl = "/api/bingo/fresh-board?boardType=" + encodeURIComponent(currentBoardType);
+        
+        fetch(apiUrl)
             .then(function (resp) { return resp.json(); })
             .then(function (cells) {
                 liveTiles   = cells;
@@ -300,9 +522,14 @@
                 modalShown  = false;
                 currentPhase = "ACTIVE";
                 persistSnapshot();
-                paintGrid();
+                renderBoard();
                 showPhase("ACTIVE");
             });
+    };
+
+    window.startScavengerMode = function () {
+        syncRadioSelection("gameMode", MODE_SCAVENGER);
+        launchGame();
     };
 
     window.retreatToLobby = function () {
@@ -311,6 +538,7 @@
         modalShown  = false;
         currentPhase = "LOBBY";
         persistSnapshot();
+        syncLobbySelections();
         showPhase("LOBBY");
     };
 
@@ -322,9 +550,11 @@
 
     /* ── boot ─────────────────────────────────────────────────── */
     if (restoreSnapshot()) {
-        paintGrid();
+        syncLobbySelections();
+        renderBoard();
         showPhase(currentPhase);
     } else {
+        syncLobbySelections();
         showPhase("LOBBY");
     }
 })();
