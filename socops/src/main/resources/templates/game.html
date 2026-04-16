@@ -22,7 +22,7 @@
 <!--  LOBBY — visible before a game starts                          -->
 <!-- ============================================================= -->
 <div id="lobbyView" class="flex flex-col items-center justify-center min-h-full p-6 bg-gray-50">
-    <div class="text-center max-w-sm">
+    <div class="text-center max-w-lg">
         <h1 class="text-4xl font-bold text-gray-900 mb-2">Soc Ops</h1>
         <p class="text-lg text-gray-600 mb-8">Social Bingo</p>
 
@@ -30,62 +30,69 @@
             <h2 class="font-semibold text-gray-800 mb-3">How to play</h2>
             <ul class="text-left text-gray-600 text-sm space-y-2">
                 <li>• Find people who match the questions</li>
-                <li>• Pick Bingo for a board or Scavenger Hunt for a checklist</li>
+                <li>• Pick Bingo for a board, Scavenger Hunt for a checklist, or Card Deck Shuffle for one prompt at a time</li>
                 <li>• Mark each match as you meet people around the room</li>
             </ul>
         </div>
 
-        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200 mb-8">
-            <h2 class="font-semibold text-gray-800 mb-4">Choose Your Mode</h2>
-            <div class="space-y-3">
-                <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-accent transition-colors">
+        <fieldset class="bg-white rounded-lg p-6 shadow-sm border border-gray-200 mb-8 selection-panel">
+            <legend class="font-semibold text-gray-800 mb-4">Choose Your Mode</legend>
+            <div class="choice-stack">
+                <label class="choice-card cursor-pointer transition-colors">
                     <input type="radio" name="gameMode" value="bingo" checked class="mr-3 text-accent">
-                    <div class="text-left">
+                    <div class="choice-copy">
                         <div class="font-medium text-gray-900">Bingo</div>
                         <div class="text-sm text-gray-500">Classic 5x5 board with line wins</div>
                     </div>
                 </label>
-                <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-accent transition-colors">
+                <label class="choice-card cursor-pointer transition-colors">
                     <input type="radio" name="gameMode" value="scavenger" class="mr-3 text-accent">
-                    <div class="text-left">
+                    <div class="choice-copy">
                         <div class="font-medium text-gray-900">Scavenger Hunt</div>
                         <div class="text-sm text-gray-500">Simple checklist with live progress</div>
                     </div>
                 </label>
+                <label class="choice-card cursor-pointer transition-colors">
+                    <input type="radio" name="gameMode" value="deck" class="mr-3 text-accent">
+                    <div class="choice-copy">
+                        <div class="font-medium text-gray-900">Card Deck Shuffle</div>
+                        <div class="text-sm text-gray-500">Tap to draw one cyberpunk question card at a time</div>
+                    </div>
+                </label>
             </div>
-        </div>
+        </fieldset>
 
         <!-- Board Type Selection -->
-        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200 mb-8">
-            <h2 class="font-semibold text-gray-800 mb-4">Choose Your Board</h2>
-            <div class="space-y-3">
-                <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-accent transition-colors">
+        <fieldset class="bg-white rounded-lg p-6 shadow-sm border border-gray-200 mb-8 selection-panel">
+            <legend class="font-semibold text-gray-800 mb-4">Choose Your Board</legend>
+            <div class="choice-stack">
+                <label class="choice-card cursor-pointer transition-colors">
                     <input type="radio" name="boardType" value="classic" checked class="mr-3 text-accent">
-                    <div class="text-left">
+                    <div class="choice-copy">
                         <div class="font-medium text-gray-900">Classic Mix</div>
                         <div class="text-sm text-gray-500">General icebreakers for everyone</div>
                     </div>
                 </label>
-                <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-accent transition-colors">
+                <label class="choice-card cursor-pointer transition-colors">
                     <input type="radio" name="boardType" value="chaotic" class="mr-3 text-accent">
-                    <div class="text-left">
+                    <div class="choice-copy">
                         <div class="font-medium text-gray-900">Chaotic Tech & Side Projects</div>
                         <div class="text-sm text-gray-500">For developers and makers</div>
                     </div>
                 </label>
             </div>
-        </div>
+        </fieldset>
 
-        <button onclick="launchGame()"
-                class="w-full bg-accent text-white font-semibold py-4 px-8 rounded-lg text-lg accent-active transition-colors">
-            Start Game
-        </button>
-        <button id="startScavengerButton"
-                data-mode="scavenger"
-                onclick="startScavengerMode()"
-                class="w-full bg-white text-gray-900 font-semibold py-3 px-8 rounded-lg text-sm transition-colors border border-gray-200 mt-3">
-            Start Scavenger Hunt
-        </button>
+        <div class="lobby-actions">
+            <button id="startPrimaryButton"
+                    type="button"
+                    onclick="launchGame()"
+                    aria-describedby="startModeHint"
+                    class="w-full bg-accent text-white font-semibold py-4 px-8 rounded-lg text-lg accent-active transition-colors">
+                Start Bingo
+            </button>
+            <p id="startModeHint" class="cta-hint">Start the currently selected mode with your chosen board theme.</p>
+        </div>
     </div>
 </div>
 
@@ -105,7 +112,7 @@
     </header>
 
     <!-- hint -->
-    <p id="activeHint" class="text-center text-gray-500 text-sm py-2 px-4">
+    <p id="activeHint" class="text-center text-gray-500 text-sm py-2 px-4" aria-live="polite">
         Tap a square when you find someone who matches it.
     </p>
 
@@ -134,6 +141,9 @@
         </div>
         <div id="scavengerChecklist" class="scavenger-list" role="list" style="display:none">
             <!-- checklist rows injected by JS -->
+        </div>
+        <div id="deckModeView" class="deck-mode" style="display:none">
+            <!-- deck experience injected by JS -->
         </div>
     </div>
 </div>
@@ -165,9 +175,12 @@
     var SIDE = 5;
     var TOTAL_CELLS = SIDE * SIDE;
     var PERSIST_KEY = "socops-bingo-snapshot";
-    var SCAVENGER_PERSIST_KEY = "socops-bingo-snapshot";
+    var SCAVENGER_PERSIST_KEY = "socops-scavenger-snapshot";
+    var DECK_PERSIST_KEY = "socops-card-deck-snapshot";
+    var LOBBY_PREFS_KEY = "socops-lobby-preferences";
     var MODE_BINGO = "bingo";
     var MODE_SCAVENGER = "scavenger";
+    var MODE_DECK = "deck";
 
     /* ── state ────────────────────────────────────────────────── */
     var liveTiles   = [];          /* Array of BingoCell objects  */
@@ -176,12 +189,16 @@
     var currentPhase = "LOBBY";    /* LOBBY | ACTIVE | VICTORY    */
     var currentBoardType = "classic";
     var currentGameplayMode = MODE_BINGO;
+    var deckPrompts = [];
+    var revealedCard = null;
+    var drawInFlight = false;
 
     /* ── DOM refs ─────────────────────────────────────────────── */
     var lobbyDiv        = document.getElementById("lobbyView");
     var activeDiv       = document.getElementById("activeView");
     var gridDiv         = document.getElementById("gridContainer");
     var scavengerDiv    = document.getElementById("scavengerChecklist");
+    var deckDiv         = document.getElementById("deckModeView");
     var bannerDiv       = document.getElementById("bingoBanner");
     var overlayDiv      = document.getElementById("victoryOverlay");
     var activeModeLabel = document.getElementById("activeModeLabel");
@@ -189,42 +206,85 @@
     var progressPanel   = document.getElementById("progressPanel");
     var progressText    = document.getElementById("progressText");
     var progressFill    = document.getElementById("progressFill");
+    var startPrimaryButton = document.getElementById("startPrimaryButton");
+    var startModeHint = document.getElementById("startModeHint");
+
+    function isScavengerMode() {
+        return currentGameplayMode === MODE_SCAVENGER;
+    }
+
+    function isDeckMode() {
+        return currentGameplayMode === MODE_DECK;
+    }
+
+    function updateVictoryUi() {
+        var showVictory = currentGameplayMode === MODE_BINGO && streakFound;
+        bannerDiv.style.display = showVictory ? "" : "none";
+        overlayDiv.style.display = (showVictory && modalShown) ? "" : "none";
+    }
+
+    function setBoardPresentation(mode) {
+        gridDiv.style.display = mode === MODE_BINGO ? "grid" : "none";
+        scavengerDiv.style.display = mode === MODE_SCAVENGER ? "" : "none";
+        progressPanel.style.display = mode === MODE_SCAVENGER ? "" : "none";
+        deckDiv.style.display = mode === MODE_DECK ? "" : "none";
+    }
+
+    function getPersistKey() {
+        return getPersistKeyForMode(currentGameplayMode);
+    }
+
+    function getPersistKeyForMode(mode) {
+        if (mode === MODE_DECK) {
+            return DECK_PERSIST_KEY;
+        }
+        return mode === MODE_SCAVENGER ? SCAVENGER_PERSIST_KEY : PERSIST_KEY;
+    }
 
     /* ── phase switching ──────────────────────────────────────── */
     function showPhase(phase) {
         currentPhase = phase;
         lobbyDiv.style.display   = (phase === "LOBBY") ? "" : "none";
         activeDiv.style.display  = (phase !== "LOBBY") ? "" : "none";
-        bannerDiv.style.display  = (currentGameplayMode === MODE_BINGO && streakFound) ? "" : "none";
-        overlayDiv.style.display = (currentGameplayMode === MODE_BINGO && modalShown) ? "" : "none";
+        updateVictoryUi();
     }
 
     /* ── board rendering ──────────────────────────────────────── */
     function renderBoard() {
         syncActiveViewCopy();
 
-        if (currentGameplayMode === MODE_SCAVENGER) {
-            gridDiv.style.display = "none";
-            scavengerDiv.style.display = "";
-            progressPanel.style.display = "";
-            paintChecklist();
+        if (isScavengerMode()) {
+            setBoardPresentation(MODE_SCAVENGER);
+            renderChecklist(liveTiles);
             updateProgress();
             return;
         }
 
-        progressPanel.style.display = "none";
-        scavengerDiv.style.display = "none";
-        gridDiv.style.display = "grid";
+        if (isDeckMode()) {
+            setBoardPresentation(MODE_DECK);
+            renderDeckMode();
+            return;
+        }
+
+        setBoardPresentation(MODE_BINGO);
         paintGrid();
     }
 
     function syncActiveViewCopy() {
-        activeModeLabel.textContent = (currentGameplayMode === MODE_SCAVENGER)
-            ? "Scavenger Hunt"
-            : "Bingo";
-        activeHint.textContent = (currentGameplayMode === MODE_SCAVENGER)
-            ? "Check off each prompt as you find someone who matches it."
-            : "Tap a square when you find someone who matches it.";
+        if (isScavengerMode()) {
+            activeModeLabel.textContent = "Scavenger Hunt";
+            activeHint.textContent = "Check off each prompt as you find someone who matches it.";
+            return;
+        }
+
+        if (isDeckMode()) {
+            activeModeLabel.textContent = "Card Deck";
+            activeHint.textContent = "Tap the deck to flip over one random prompt card.";
+            return;
+        }
+
+        activeModeLabel.textContent = "Bingo";
+        activeHint.textContent = "Tap a square when you find someone who matches it.";
     }
 
     function paintGrid() {
@@ -321,19 +381,131 @@
 
             var meta = document.createElement("span");
             meta.className = "scavenger-meta";
-            if (tile.freeCell) {
-                meta.textContent = "Auto-complete bonus tile";
-            } else if (tile.selected) {
-                meta.textContent = "Marked complete";
-            } else {
-                meta.textContent = "Tap to mark complete";
-            }
+            meta.textContent = describeChecklistTile(tile);
             copyWrap.appendChild(meta);
 
             row.appendChild(checkbox);
             row.appendChild(copyWrap);
             scavengerDiv.appendChild(row);
         }
+    }
+
+    function describeChecklistTile(tile) {
+        if (tile.freeCell) {
+            return "Auto-complete bonus tile";
+        }
+        if (tile.selected) {
+            return "Marked complete";
+        }
+        return "Tap to mark complete";
+    }
+
+    function renderDeckMode() {
+        var remainingCards = deckPrompts.length;
+        var deckButtonLabel = remainingCards > 0 ? "Tap to Draw" : "Reshuffle Deck";
+        var deckStatus = remainingCards > 0
+            ? remainingCards + " encrypted prompts left"
+            : "Deck exhausted. Pull a fresh shuffle.";
+        var revealedCount = extractDeckPrompts(liveTiles).length - remainingCards;
+        var frontStatus = drawInFlight
+            ? "Decrypting signal..."
+            : (remainingCards > 0 ? "Tap the neon deck to reveal your next question." : "No cards left. Reshuffle to keep the room moving.");
+
+        deckDiv.innerHTML = "" +
+            '<div class="deck-shell">' +
+                '<div class="deck-hud">' +
+                    '<div>' +
+                        '<div class="deck-kicker">Card Deck Shuffle</div>' +
+                        '<div class="deck-status">' + escapeHtml(deckStatus) + '</div>' +
+                    '</div>' +
+                    '<button id="reshuffleDeckButton" type="button" class="deck-mini-button">Refresh Deck</button>' +
+                '</div>' +
+                '<button id="cardDeckButton" type="button" aria-controls="deckRevealPanel" class="deck-trigger accent-active' + (drawInFlight ? ' is-arming' : '') + '">' +
+                    '<span class="deck-trigger-stack" aria-hidden="true"></span>' +
+                    '<span class="deck-trigger-copy">' +
+                        '<span class="deck-trigger-label">' + escapeHtml(deckButtonLabel) + '</span>' +
+                        '<span class="deck-trigger-meta">Board: ' + escapeHtml(currentBoardType) + '</span>' +
+                    '</span>' +
+                '</button>' +
+                '<div id="deckRevealPanel" class="draw-scene">' +
+                    '<div class="draw-card' + (drawInFlight ? ' is-drawing' : '') + (revealedCard ? ' is-flipped' : '') + '">' +
+                        '<div class="draw-card-face draw-card-front">' +
+                            '<div class="draw-card-topline">' +
+                                '<div class="deck-kicker">Signal Locked</div>' +
+                                '<div class="deck-chip">Neural Deck</div>' +
+                            '</div>' +
+                            '<div>' +
+                                '<div class="deck-front-title">SOC OPS</div>' +
+                                '<p class="deck-front-copy">' + escapeHtml(frontStatus) + '</p>' +
+                            '</div>' +
+                            '<div class="draw-card-footer">Shuffle Protocol // Tap To Reveal</div>' +
+                        '</div>' +
+                        '<div class="draw-card-face draw-card-back">' +
+                            '<div class="draw-card-topline">' +
+                                '<div class="deck-kicker">Incoming Prompt</div>' +
+                                '<div class="deck-chip">Card ' + escapeHtml(String(Math.max(revealedCount, 0))) + '</div>' +
+                            '</div>' +
+                            '<p class="deck-question-text" aria-live="polite" aria-atomic="true">' + escapeHtml(revealedCard || "Awaiting draw") + '</p>' +
+                            '<div class="draw-card-footer">Speak // Connect // Draw Again</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+
+        document.getElementById("cardDeckButton").addEventListener("click", drawNextCard);
+        document.getElementById("reshuffleDeckButton").addEventListener("click", refreshDeckMode);
+    }
+
+    function drawNextCard() {
+        if (drawInFlight) {
+            return;
+        }
+
+        if (deckPrompts.length === 0) {
+            refreshDeckMode();
+            return;
+        }
+
+        var nextPrompt = deckPrompts.shift();
+
+        drawInFlight = true;
+        revealedCard = nextPrompt;
+        persistSnapshot();
+        renderBoard();
+
+        window.setTimeout(function () {
+            drawInFlight = false;
+            persistSnapshot();
+            renderBoard();
+        }, 220);
+    }
+
+    function refreshDeckMode() {
+        requestFreshBoard(function (cells) {
+            liveTiles = cells;
+            deckPrompts = extractDeckPrompts(cells);
+            revealedCard = null;
+            drawInFlight = false;
+            currentPhase = "ACTIVE";
+            persistSnapshot();
+            renderBoard();
+            showPhase("ACTIVE");
+        });
+    }
+
+    function extractDeckPrompts(cells) {
+        return cells
+            .filter(function (cell) { return !cell.freeCell; })
+            .map(function (cell) { return cell.prompt; });
+    }
+
+    function escapeHtml(text) {
+        return String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\"/g, "&quot;")
+            .replace(/'/g, "&#39;");
     }
 
     /* ── tile tap logic ───────────────────────────────────────── */
@@ -350,8 +522,7 @@
         }
         persistSnapshot();
         renderBoard();
-        bannerDiv.style.display  = (currentGameplayMode === MODE_BINGO && streakFound) ? "" : "none";
-        overlayDiv.style.display = (currentGameplayMode === MODE_BINGO && modalShown) ? "" : "none";
+        updateVictoryUi();
     }
 
     function toggleChecklistItem(itemId) {
@@ -447,16 +618,25 @@
     }
 
     function updateProgress() {
-        var progress = calculateProgress(liveTiles);
+        var progress = calculateChecklistProgress(liveTiles);
         progressText.textContent = progress.completed + " / " + progress.total + " complete";
         progressFill.style.width = progress.percent + "%";
         progressFill.setAttribute("aria-valuenow", String(progress.completed));
         progressFill.setAttribute("aria-valuetext", progress.completed + " of " + progress.total + " complete");
     }
 
+    function requestFreshBoard(onSuccess) {
+        var apiUrl = "/api/bingo/fresh-board?boardType=" + encodeURIComponent(currentBoardType);
+
+        fetch(apiUrl)
+            .then(function (resp) { return resp.json(); })
+            .then(onSuccess);
+    }
+
     function syncLobbySelections() {
         syncRadioSelection("boardType", currentBoardType);
         syncRadioSelection("gameMode", currentGameplayMode);
+        updateLobbyCta();
     }
 
     function syncRadioSelection(groupName, value) {
@@ -464,6 +644,108 @@
         if (radio) {
             radio.checked = true;
         }
+    }
+
+    function updateLobbyCta() {
+        if (!startPrimaryButton || !startModeHint) {
+            return;
+        }
+
+        if (isScavengerMode()) {
+            startPrimaryButton.textContent = "Start Scavenger Hunt";
+            startModeHint.textContent = "Launch the checklist view and keep live progress for this board.";
+            return;
+        }
+
+        if (isDeckMode()) {
+            startPrimaryButton.textContent = "Launch Card Deck";
+            startModeHint.textContent = "Open the deck console and draw one prompt card at a time.";
+            return;
+        }
+
+        startPrimaryButton.textContent = "Start Bingo";
+        startModeHint.textContent = "Launch the 5x5 board and play for line wins with your selected prompt theme.";
+    }
+
+    function persistLobbyPreferences(resumeMode) {
+        try {
+            localStorage.setItem(LOBBY_PREFS_KEY, JSON.stringify({
+                boardType: currentBoardType,
+                mode: currentGameplayMode,
+                resumeMode: typeof resumeMode === "string" ? resumeMode : (currentPhase === "LOBBY" ? null : currentGameplayMode)
+            }));
+        } catch (_) { /* storage full or unavailable */ }
+    }
+
+    function restoreLobbyPreferences() {
+        try {
+            var raw = localStorage.getItem(LOBBY_PREFS_KEY);
+            if (!raw) {
+                return null;
+            }
+
+            var prefs = JSON.parse(raw);
+            currentBoardType = prefs.boardType || "classic";
+            currentGameplayMode = prefs.mode || MODE_BINGO;
+            return prefs;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    function readLobbySelections() {
+        currentBoardType = document.querySelector('input[name="boardType"]:checked').value;
+        currentGameplayMode = document.querySelector('input[name="gameMode"]:checked').value;
+    }
+
+    function bindLobbyControls() {
+        var boardInputs = document.querySelectorAll('input[name="boardType"]');
+        var modeInputs = document.querySelectorAll('input[name="gameMode"]');
+        var index;
+
+        for (index = 0; index < boardInputs.length; index++) {
+            boardInputs[index].addEventListener("change", function () {
+                readLobbySelections();
+                persistLobbyPreferences(null);
+                updateLobbyCta();
+            });
+        }
+
+        for (index = 0; index < modeInputs.length; index++) {
+            modeInputs[index].addEventListener("change", function () {
+                readLobbySelections();
+                persistLobbyPreferences(null);
+                updateLobbyCta();
+            });
+        }
+    }
+
+    function readSnapshot(key) {
+        try {
+            var raw = localStorage.getItem(key);
+            return raw ? JSON.parse(raw) : null;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    function applySnapshot(snap) {
+        currentBoardType = snap.boardType || currentBoardType || "classic";
+        currentGameplayMode = snap.mode || currentGameplayMode || MODE_BINGO;
+        if (!snap.tiles || snap.tiles.length !== TOTAL_CELLS) {
+            syncLobbySelections();
+            return false;
+        }
+
+        liveTiles = snap.tiles;
+        streakFound = snap.streak || null;
+        modalShown = !!snap.modal;
+        currentPhase = snap.phase || "ACTIVE";
+        deckPrompts = Array.isArray(snap.deckPrompts) ? snap.deckPrompts : [];
+        revealedCard = snap.revealedCard || null;
+        drawInFlight = false;
+        syncLobbySelections();
+        return currentPhase !== "LOBBY";
     }
 
     /* ── localStorage persistence ─────────────────────────────── */
@@ -479,56 +761,64 @@
                 mode: currentGameplayMode,
                 tiles: liveTiles,
                 streak: streakFound,
-                modal: modalShown
+                modal: modalShown,
+                deckPrompts: deckPrompts,
+                revealedCard: revealedCard
             });
-            localStorage.setItem(PERSIST_KEY, blob);
+            localStorage.setItem(getPersistKey(), blob);
+            persistLobbyPreferences();
         } catch (_) { /* storage full or unavailable */ }
     }
 
     function restoreScavengerState() {
-        return restoreSnapshot();
+        var snap = readSnapshot(SCAVENGER_PERSIST_KEY);
+        return snap ? applySnapshot(snap) : false;
     }
 
     function restoreSnapshot() {
-        try {
-            var raw = localStorage.getItem(PERSIST_KEY);
-            if (!raw) { return false; }
-            var snap = JSON.parse(raw);
-            currentBoardType = snap.boardType || "classic";
-            currentGameplayMode = snap.mode || MODE_BINGO;
-            if (!snap.tiles || snap.tiles.length !== TOTAL_CELLS) {
-                syncLobbySelections();
-                return false;
-            }
-            liveTiles   = snap.tiles;
-            streakFound = snap.streak || null;
-            modalShown  = !!snap.modal;
-            currentPhase = snap.phase || "ACTIVE";
-            return currentPhase !== "LOBBY";
-        } catch (_) { return false; }
+        var prefs = restoreLobbyPreferences();
+        var resumeMode = prefs && prefs.resumeMode ? prefs.resumeMode : null;
+        var snap = null;
+
+        if (resumeMode) {
+            snap = readSnapshot(getPersistKeyForMode(resumeMode));
+        }
+
+        if (!snap || !snap.tiles || snap.phase === "LOBBY") {
+            syncLobbySelections();
+            return false;
+        }
+
+        return applySnapshot(snap);
     }
 
     /* ── public API (called from onclick attrs) ───────────────── */
     window.launchGame = function () {
-        currentBoardType = document.querySelector('input[name="boardType"]:checked').value;
-        currentGameplayMode = document.querySelector('input[name="gameMode"]:checked').value;
-        var apiUrl = "/api/bingo/fresh-board?boardType=" + encodeURIComponent(currentBoardType);
-        
-        fetch(apiUrl)
-            .then(function (resp) { return resp.json(); })
-            .then(function (cells) {
-                liveTiles   = cells;
-                streakFound = null;
-                modalShown  = false;
-                currentPhase = "ACTIVE";
-                persistSnapshot();
-                renderBoard();
-                showPhase("ACTIVE");
-            });
+        readLobbySelections();
+
+        requestFreshBoard(function (cells) {
+            liveTiles   = cells;
+            streakFound = null;
+            modalShown  = false;
+            deckPrompts = isDeckMode() ? extractDeckPrompts(cells) : [];
+            revealedCard = null;
+            drawInFlight = false;
+            currentPhase = "ACTIVE";
+            persistSnapshot();
+            renderBoard();
+            showPhase("ACTIVE");
+        });
     };
 
     window.startScavengerMode = function () {
         syncRadioSelection("gameMode", MODE_SCAVENGER);
+        updateLobbyCta();
+        launchGame();
+    };
+
+    window.startDeckMode = function () {
+        syncRadioSelection("gameMode", MODE_DECK);
+        updateLobbyCta();
         launchGame();
     };
 
@@ -537,6 +827,9 @@
         streakFound = null;
         modalShown  = false;
         currentPhase = "LOBBY";
+        deckPrompts = [];
+        revealedCard = null;
+        drawInFlight = false;
         persistSnapshot();
         syncLobbySelections();
         showPhase("LOBBY");
@@ -549,6 +842,7 @@
     };
 
     /* ── boot ─────────────────────────────────────────────────── */
+    bindLobbyControls();
     if (restoreSnapshot()) {
         syncLobbySelections();
         renderBoard();

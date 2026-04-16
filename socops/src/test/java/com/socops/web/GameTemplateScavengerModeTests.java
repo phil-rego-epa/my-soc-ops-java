@@ -27,10 +27,10 @@ class GameTemplateScavengerModeTests {
         assertAll(
                 () -> assertTrue(html.contains("Scavenger Hunt"),
                         "The start screen should mention Scavenger Hunt by name"),
-                () -> assertTrue(html.contains("id=\"startScavengerButton\""),
-                        "The start screen should expose a dedicated scavenger-mode start action"),
-                () -> assertTrue(html.contains("data-mode=\"scavenger\""),
-                        "The scavenger-mode start action should identify the selected mode explicitly")
+                () -> assertTrue(html.contains("id=\"startPrimaryButton\""),
+                        "The start screen should expose a single mode-aware primary action"),
+                () -> assertTrue(html.contains("Start Scavenger Hunt"),
+                        "The lobby CTA logic should include a scavenger-specific label")
         );
     }
 
@@ -74,8 +74,10 @@ class GameTemplateScavengerModeTests {
         String html = fetchGamePage();
 
         assertAll(
-                () -> assertTrue(html.contains("SCAVENGER_PERSIST_KEY"),
+                () -> assertTrue(html.contains("var SCAVENGER_PERSIST_KEY = \"socops-scavenger-snapshot\""),
                         "The template script should define a dedicated scavenger persistence key"),
+                () -> assertTrue(html.contains("var LOBBY_PREFS_KEY = \"socops-lobby-preferences\""),
+                        "The template script should keep lobby preferences separate from gameplay snapshots"),
                 () -> assertTrue(html.contains("function saveScavengerState()"),
                         "The template script should define scavenger-state persistence"),
                 () -> assertTrue(html.contains("function restoreScavengerState()"),
